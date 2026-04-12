@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Security Gateway</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.scene {
+  position: relative;
+  z-index: 10;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel {
+  width: 420px;
+  background: rgba(20, 12, 35, 0.80);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 20px;
+  padding: 28px 26px 24px;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.5);
+  animation: slideIn 0.6s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes slideIn {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.dots { display:flex; gap:5px; }
+.dot  { width:8px; height:8px; border-radius:50%; }
+.d1 { background:#f08080; }
+.d2 { background:#f5c97a; }
+.d3 { background:#80d8a0; }
+
+.time {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: rgba(200,180,240,0.5);
+  letter-spacing: 1px;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f0e0ff;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: rgba(180,160,220,0.45);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.lbl {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(180,160,220,0.45);
+  margin-bottom: 8px;
+}
+
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  color: #e8d8ff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 400;
+  line-height: 1.6;
+  resize: none;
+  height: 100px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+textarea::placeholder { color: rgba(180,160,220,0.22); }
+textarea:focus { border-color: rgba(180,120,220,0.45); }
+
+.btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #6b21a8, #4c1d95, #1e3a8a);
+  color: #e8d8ff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.80rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid rgba(180,120,255,0.2);
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.btn:hover { transform: translateY(-1px); opacity: 0.9; }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 16px 0;
+}
+
+.result {
+  display: none;
+  animation: fadeUp 0.35s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.badge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.badge-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.badge-label {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.ALLOW .badge-icon  { background: rgba(128,216,160,0.2); color:#80d8a0; }
+.ALLOW .badge-label { color: #80d8a0; }
+.MASK  .badge-icon  { background: rgba(245,200,100,0.2); color:#f5c864; }
+.MASK  .badge-label { color: #f5c864; }
+.BLOCK .badge-icon  { background: rgba(240,100,100,0.2); color:#f08080; }
+.BLOCK .badge-label { color: #f08080; }
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 6px 0;
+  font-size: 0.78rem;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.row:last-child { border-bottom: none; }
+.row .k { color: rgba(180,160,220,0.45); font-weight: 500; min-width: 100px; flex-shrink:0; }
+.row .v { color: rgba(230,216,255,0.80); text-align:right; word-break:break-all; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div class="scene">
+  <div class="panel">
+    <div class="topbar">
+      <div class="dots">
+        <div class="dot d1"></div>
+        <div class="dot d2"></div>
+        <div class="dot d3"></div>
+      </div>
+      <div class="time" id="clock"></div>
+    </div>
+
+    <div class="title">LLM Security Gateway</div>
+    <div class="subtitle">A model by Sarah Shad</div>
+
+    <div class="lbl">your message</div>
+    <textarea id="userInput" placeholder="Type your message here..."></textarea>
+    <button class="btn" id="btn" onclick="checkInput()">scan input</button>
+
+    <div class="divider"></div>
+
+    <div class="result" id="result">
+      <div class="badge-row">
+        <div class="badge-icon" id="bIcon"></div>
+        <div class="badge-label" id="bLabel"></div>
+      </div>
+      <div class="row"><span class="k">Reason</span><span class="v" id="reason"></span></div>
+      <div class="row"><span class="k">Injection Score</span><span class="v" id="score"></span></div>
+      <div class="row"><span class="k">Latency</span><span class="v" id="latency"></span></div>
+      <div class="row"><span class="k">Cleaned Input</span><span class="v" id="cleaned"></span></div>
+      <div class="row"><span class="k">PII Detected</span><span class="v" id="pii"></span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+
+function resize() { cv.width = window.innerWidth; cv.height = window.innerHeight; drawScene(); }
+
+function drawScene() {
+  const W = cv.width, H = cv.height;
+
+  const sky = ctx.createLinearGradient(0, 0, 0, H * 0.78);
+  sky.addColorStop(0,    '#0c0520');
+  sky.addColorStop(0.18, '#160832');
+  sky.addColorStop(0.38, '#2a1050');
+  sky.addColorStop(0.55, '#4a1a6a');
+  sky.addColorStop(0.70, '#7a2a60');
+  sky.addColorStop(0.82, '#c05050');
+  sky.addColorStop(0.92, '#e08060');
+  sky.addColorStop(1,    '#e8a070');
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+  const glow = ctx.createRadialGradient(W*0.38, H*0.72, 0, W*0.38, H*0.72, W*0.45);
+  glow.addColorStop(0, 'rgba(255,160,80,0.22)');
+  glow.addColorStop(0.5, 'rgba(255,100,80,0.08)');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+
+  const mx = W*0.18, my = H*0.14, mr = 38;
+  const mf = ctx.createRadialGradient(mx-mr*0.25, my-mr*0.2, mr*0.05, mx, my, mr);
+  mf.addColorStop(0, '#fffde8'); mf.addColorStop(0.5, '#f5e090'); mf.addColorStop(1, '#c8a030');
+  ctx.fillStyle = mf; ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI*2); ctx.fill();
+
+  const stars = [[0.08,0.06,1.5],[0.14,0.03,1],[0.22,0.04,0.8],[0.32,0.02,1.3],[0.45,0.04,1.1],[0.52,0.02,1.4],[0.65,0.03,1],[0.78,0.02,0.9],[0.85,0.07,1.2],[0.96,0.06,0.8],[0.72,0.05,1.3],[0.35,0.13,1],[0.55,0.16,0.8],[0.92,0.14,1.1]];
+  stars.forEach(([rx,ry,rs]) => { ctx.fillStyle = `rgba(255,255,220,0.7)`; ctx.beginPath(); ctx.arc(W*rx, H*ry, rs, 0, Math.PI*2); ctx.fill(); });
+
+  function mountain(pts, color) {
+    ctx.beginPath(); ctx.moveTo(0, H);
+    pts.forEach(([x,y]) => ctx.lineTo(W*x, H*y));
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+  }
+
+  mountain([[0,0.72],[0.08,0.55],[0.22,0.48],[0.38,0.44],[0.53,0.42],[0.68,0.46],[0.83,0.42],[1,0.68]],'rgba(60,20,90,0.55)');
+  mountain([[0,0.78],[0.13,0.70],[0.28,0.68],[0.42,0.65],[0.57,0.63],[0.70,0.62],[0.85,0.60],[1,0.72]],'rgba(40,15,65,0.65)');
+
+  const gnd = ctx.createLinearGradient(0, H*0.72, 0, H);
+  gnd.addColorStop(0,'#1a0828'); gnd.addColorStop(1,'#0a0415');
+  ctx.fillStyle = gnd; ctx.fillRect(0, H*0.72, W, H*0.28);
+
+  const bldgs = [[0,0.55,0.06],[0.05,0.40,0.04],[0.14,0.35,0.05],[0.25,0.38,0.04],[0.34,0.42,0.05],[0.46,0.36,0.04],[0.56,0.40,0.05],[0.66,0.38,0.04],[0.76,0.34,0.05],[0.88,0.40,0.05],[0.92,0.55,0.08]];
+  bldgs.forEach(([bx,by,bw]) => {
+    ctx.fillStyle='#0d0520'; ctx.fillRect(W*bx, H*by, W*bw, H*(0.82-by));
+    const cols = Math.floor(bw*W/14), rows = Math.floor((0.82-by)*H/18);
+    for (let r=0;r<rows;r++) for(let c=0;c<cols;c++) {
+      if (Math.random()>0.55) {
+        const wx=W*bx+c*14+4, wy=H*by+r*18+8, wc=Math.random();
+        ctx.fillStyle = wc>0.6 ? `rgba(255,220,100,0.6)` : wc>0.3 ? `rgba(180,220,255,0.5)` : `rgba(255,150,180,0.5)`;
+        ctx.fillRect(wx,wy,6,8);
+      }
+    }
+  });
+
+  const vig=ctx.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,H*0.85);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.55)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+}
+
+function updateClock() {
+  const now=new Date(); let h=now.getHours()%12||12; let m=String(now.getMinutes()).padStart(2,'0'); let ap=now.getHours()>=12?'pm':'am';
+  document.getElementById('clock').textContent=`${h}:${m} ${ap}`;
+}
+
+async function checkInput() {
+  const message=document.getElementById('userInput').value;
+  if(!message.trim()){alert('Type something first!');return;}
+  const btn=document.getElementById('btn'); btn.textContent='scanning...'; btn.disabled=true;
+  try {
+    const res=await fetch('/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message})});
+    const data=await res.json();
+    const box=document.getElementById('result'); box.style.display='block'; box.className='result '+data.decision;
+    document.getElementById('bIcon').textContent  ={ALLOW:'✓',MASK:'◎',BLOCK:'✕'}[data.decision];
+    document.getElementById('bLabel').textContent ={ALLOW:'Allowed',MASK:'Masked',BLOCK:'Blocked'}[data.decision];
+    document.getElementById('reason').textContent  =data.reason;
+    document.getElementById('score').textContent   =data.injection_score;
+    document.getElementById('latency').textContent =data.latency_ms+' ms';
+    document.getElementById('cleaned').textContent =data.cleaned_input||'n/a';
+    document.getElementById('pii').textContent     =data.pii_found?.length>0?data.pii_found.join(', '):'none detected';
+  } catch(e){alert('cannot reach gateway — is app.py running?');}
+  btn.textContent='scan input'; btn.disabled=false;
+}
+
+window.addEventListener('resize', resize);
+resize(); updateClock(); setInterval(updateClock, 30000);
+</script>
+</body>
+</html>
