@@ -1,9 +1,7 @@
-# Custom Presidio recognizers for Pakistani and LLM-security context
-# These teach Presidio to detect things it doesn't know by default
+
 
 from presidio_analyzer import PatternRecognizer, Pattern
 
-# ─────────────────────────────────────────
 # 1. CNIC Detector
 # Format: 35202-1234567-1
 # ─────────────────────────────────────────
@@ -15,10 +13,8 @@ cnic_recognizer = PatternRecognizer(
         score=0.9
     )]
 )
-
-# ─────────────────────────────────────────
-# 2. Pakistani City Detector
-# Detects major Pakistani cities
+# 2. City Detector
+# Detects major cities
 # ─────────────────────────────────────────
 city_recognizer = PatternRecognizer(
     supported_entity="PAKISTAN_CITY",
@@ -29,7 +25,6 @@ city_recognizer = PatternRecognizer(
     ]
 )
 
-# ─────────────────────────────────────────
 # 3. Salary / PKR Amount Detector
 # Detects things like "Rs. 50,000" or "PKR 10000"
 # ─────────────────────────────────────────
@@ -41,9 +36,7 @@ salary_recognizer = PatternRecognizer(
         score=0.85
     )]
 )
-
-# ─────────────────────────────────────────
-# 4. Pakistani Bank IBAN Detector
+# 4. Bank IBAN Detector
 # Format: PK36SCBL0000001123456702
 # ─────────────────────────────────────────
 iban_recognizer = PatternRecognizer(
@@ -54,10 +47,8 @@ iban_recognizer = PatternRecognizer(
         score=0.95
     )]
 )
-
-# ─────────────────────────────────────────
 # 5. Educational Institute Detector
-# Detects Pakistani universities
+# Detects universities
 # ─────────────────────────────────────────
 institute_recognizer = PatternRecognizer(
     supported_entity="PAKISTAN_INSTITUTE",
@@ -67,8 +58,6 @@ institute_recognizer = PatternRecognizer(
         "CIIT", "Air University", "Bahria University"
     ]
 )
-
-# ─────────────────────────────────────────
 # 6. Student ID Detector
 # Format: FA24-BCS-001
 # ─────────────────────────────────────────
@@ -80,8 +69,6 @@ student_id_recognizer = PatternRecognizer(
         score=0.9
     )]
 )
-
-# ─────────────────────────────────────────
 # 7. API Key Detector
 # Detects keys like sk-xxxx, pk_live_xxxx
 # ─────────────────────────────────────────
@@ -93,8 +80,6 @@ api_key_recognizer = PatternRecognizer(
         score=0.95
     )]
 )
-
-# ─────────────────────────────────────────
 # 8. JWT Token Detector
 # JWT tokens always start with eyJ
 # ─────────────────────────────────────────
@@ -106,9 +91,7 @@ jwt_recognizer = PatternRecognizer(
         score=0.97
     )]
 )
-
-# ─────────────────────────────────────────
-# 9. Pakistani Phone Number Detector
+# 9. Phone Number Detector
 # Format: 0300-1234567 or +923001234567
 # ─────────────────────────────────────────
 phone_recognizer = PatternRecognizer(
@@ -119,10 +102,7 @@ phone_recognizer = PatternRecognizer(
         score=0.9
     )]
 )
-
-
-# ─────────────────────────────────────────
-# Export all recognizers as a list
+# Exporting all recognizers as a list for easy access
 # ─────────────────────────────────────────
 all_custom_recognizers = [
     cnic_recognizer,
