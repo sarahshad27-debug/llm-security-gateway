@@ -1,5 +1,4 @@
 import requests
-
 tests = [
     ("CNIC", "my cnic is 35202-1234567-1"),
     ("City", "I live in Rawalpindi"),
