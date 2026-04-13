@@ -1,6 +1,5 @@
 # This file checks if a user's message is a jailbreak or prompt injection attempt
 
-# A list of suspicious phrases commonly used in attacks
 INJECTION_KEYWORDS = [
     "ignore previous instructions",
     "forget your rules",
@@ -20,11 +19,11 @@ def calculate_injection_score(user_input):
     Higher score = more dangerous.
     """
     score = 0
-    user_input_lower = user_input.lower()  # convert to lowercase for easy matching
+    user_input_lower = user_input.lower()  # converts to lowercase for  matching
 
     for keyword in INJECTION_KEYWORDS:
         if keyword in user_input_lower:
-            score += 1  # add 1 point for every suspicious phrase found
+            score += 1  # adds 1 point for every suspicious word
 
     return score
 
