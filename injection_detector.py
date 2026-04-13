@@ -34,4 +34,4 @@ def is_injection(user_input, threshold=1):
     Threshold = how many suspicious phrases before we block.
     """
     score = calculate_injection_score(user_input)
-    return score >= threshold, score  # returns (True/False, the actual score)
+    return score >= threshold, score  
