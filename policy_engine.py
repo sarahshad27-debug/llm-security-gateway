@@ -1,12 +1,8 @@
-# This file decides what to do with the user's input
-# Three possible decisions: ALLOW, MASK, or BLOCK
-
 from injection_detector import is_injection
 from pii_handler import anonymize_pii
 
-# Configurable thresholds — you can change these anytime
-INJECTION_THRESHOLD = 1   # how many suspicious phrases before blocking
-PII_MASK = True           # should we mask PII? True = yes
+INJECTION_THRESHOLD = 1  
+PII_MASK = True           
 
 def process_input(user_input):
     """
@@ -16,13 +12,13 @@ def process_input(user_input):
     result = {
         "original_input": user_input,
         "decision": None,        # ALLOW / MASK / BLOCK
-        "cleaned_input": None,   # input after masking (if any)
+        "cleaned_input": None,
         "injection_score": 0,    # how suspicious was it
         "pii_found": [],         # what PII was detected
         "reason": ""             # explanation of the decision
     }
 
-    # Step 1 — Check for injection/jailbreak
+    #  Check for injection/jailbreak
     injected, score = is_injection(user_input, threshold=INJECTION_THRESHOLD)
     result["injection_score"] = score
 
@@ -32,7 +28,7 @@ def process_input(user_input):
         result["cleaned_input"] = None
         return result
 
-    # Step 2 — Check for PII
+    #Check for PII
     cleaned_text, pii_found = anonymize_pii(user_input)
     result["pii_found"] = [str(p) for p in pii_found]
 
@@ -42,7 +38,7 @@ def process_input(user_input):
         result["cleaned_input"] = cleaned_text
         return result
 
-    # Step 3 — All clear, allow the input
+    # If All is clear, allow the input
     result["decision"] = "ALLOW"
     result["reason"] = "Input is clean"
     result["cleaned_input"] = user_input
