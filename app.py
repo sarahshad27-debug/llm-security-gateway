@@ -1,10 +1,9 @@
-# This is the main file that runs the gateway
-# It creates a simple web API using Flask
+# This is the main file that runs the gateway using flask
 
 from flask import Flask, request, jsonify, render_template
 from flask import Flask, request, jsonify
 from policy_engine import process_input
-import time  # for measuring latency
+import time  # to measure latency
 
 app = Flask(__name__)
 
@@ -21,21 +20,21 @@ def check_input():
     User sends a message, gateway returns a decision.
     """
 
-    # Get the message from the request
+    # message from the request
     data = request.get_json()
 
-    # If no message provided, return error
+    # If no message provided
     if not data or "message" not in data:
         return jsonify({"error": "Please provide a message..."}), 400
 
     user_message = data["message"]
 
-    # Measure how long the gateway takes (latency)
+    # Measure latency
     start_time = time.time()
     result = process_input(user_message)
     end_time = time.time()
 
-    # Add latency to result (in milliseconds)
+    # Adding latency 
     result["latency_ms"] = round((end_time - start_time) * 1000, 2)
 
     return jsonify(result)
