@@ -1,0 +1,38 @@
+# LLM Security Gateway Configuration
+# Adjust thresholds here without touching code
+
+thresholds:
+  # Rule-based injection: number of keyword matches to trigger
+  rule_injection_threshold: 1
+
+  # Semantic score (0.0 to 1.0) above which injection is flagged
+  semantic_injection_threshold: 0.55
+
+  # Final risk score above which prompt is BLOCKED
+  block_threshold: 0.60
+
+  # Final risk score above which prompt is MASKED (if not blocked)
+  mask_threshold: 0.20
+
+weights:
+  # Added to final_risk when PII is detected
+  pii_weight: 0.15
+
+  # Added to final_risk when high-confidence secrets are detected (API key, JWT, CNIC)
+  secret_weight: 0.20
+
+pii:
+  # Minimum Presidio confidence score to count as a detection
+  min_confidence: 0.60
+
+  # Entity types treated as secrets (trigger secret_weight)
+  secret_entities:
+    - API_KEY
+    - JWT_TOKEN
+    - PAKISTAN_CNIC
+    - PAKISTAN_IBAN
+
+logging:
+  # Where to write the audit log
+  audit_log_path: "logs/audit_log.jsonl"
+  enabled: true
