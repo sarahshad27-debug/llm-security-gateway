@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import yaml
 import os
 import json
@@ -14,6 +15,13 @@ CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config/gateway_config.yam
 def load_config():
     with open(CONFIG_PATH, "r") as f:
         return yaml.safe_load(f)
+=======
+from injection_detector import is_injection
+from pii_handler import anonymize_pii
+
+INJECTION_THRESHOLD = 1  
+PII_MASK = True           
+>>>>>>> 236d651ce38f5e861f8db3a99d6c3b7c9c7ddb78
 
 config = load_config()
 thresholds = config["thresholds"]
@@ -107,6 +115,7 @@ def process_input(user_input: str, language: str = "auto", input_id: str = None)
     latency_ms = round((time.time() - start_time) * 1000, 2)
 
     result = {
+<<<<<<< HEAD
         "input_id": input_id,
         "language": detected_lang,
         "rule_score": rule_score,
@@ -121,3 +130,38 @@ def process_input(user_input: str, language: str = "auto", input_id: str = None)
 
     write_audit_log(result)
     return result
+=======
+        "original_input": user_input,
+        "decision": None,        # ALLOW / MASK / BLOCK
+        "cleaned_input": None,
+        "injection_score": 0,    # how suspicious was it
+        "pii_found": [],         # what PII was detected
+        "reason": ""             # explanation of the decision
+    }
+
+    #  Check for injection/jailbreak
+    injected, score = is_injection(user_input, threshold=INJECTION_THRESHOLD)
+    result["injection_score"] = score
+
+    if injected:
+        result["decision"] = "BLOCK"
+        result["reason"] = "Prompt injection or jailbreak attempt detected"
+        result["cleaned_input"] = None
+        return result
+
+    #Check for PII
+    cleaned_text, pii_found = anonymize_pii(user_input)
+    result["pii_found"] = [str(p) for p in pii_found]
+
+    if pii_found and PII_MASK:
+        result["decision"] = "MASK"
+        result["reason"] = "PII detected and masked"
+        result["cleaned_input"] = cleaned_text
+        return result
+
+    # If All is clear, allow the input
+    result["decision"] = "ALLOW"
+    result["reason"] = "Input is clean"
+    result["cleaned_input"] = user_input
+    return result
+>>>>>>> 236d651ce38f5e861f8db3a99d6c3b7c9c7ddb78

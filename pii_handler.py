@@ -3,10 +3,11 @@ from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import OperatorConfig
 from presidio_custom import all_custom_recognizers, apply_context_boost
 
-# Initialize engines
+
 analyzer = AnalyzerEngine()
 anonymizer = AnonymizerEngine()
 
+<<<<<<< HEAD
 for recognizer in all_custom_recognizers:
     analyzer.registry.add_recognizer(recognizer)
 
@@ -45,6 +46,12 @@ def detect_pii(text: str, language: str = "en", min_confidence: float = 0.60) ->
     # For non-English, we analyze the translated version (passed from policy engine)
     analysis_lang = "en" if language not in ["en"] else language
 
+=======
+# Registering all the custom recognizers
+for recognizer in all_custom_recognizers:
+    analyzer.registry.add_recognizer(recognizer)
+def detect_pii(text):
+>>>>>>> 236d651ce38f5e861f8db3a99d6c3b7c9c7ddb78
     results = analyzer.analyze(
         text=text,
         language=analysis_lang,
@@ -59,6 +66,7 @@ def detect_pii(text: str, language: str = "en", min_confidence: float = 0.60) ->
 
     return results
 
+<<<<<<< HEAD
 
 def anonymize_pii(text: str, language: str = "en", min_confidence: float = 0.60):
     """
@@ -101,3 +109,13 @@ def format_pii_entities(detected_entities: list, original_text: str) -> list:
             "score": round(entity.score, 3)
         })
     return formatted
+=======
+def anonymize_pii(text):
+    detected = detect_pii(text)
+
+    if not detected:
+        return text, []
+    anonymized = anonymizer.anonymize(text=text, analyzer_results=detected)
+    return anonymized.text, detected
+    return anonymized.text, detected  
+>>>>>>> 236d651ce38f5e861f8db3a99d6c3b7c9c7ddb78
